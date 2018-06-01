@@ -13,6 +13,7 @@ import {
   BaseCommand,
   CommandQuitRecordMacro,
   DocumentContentChangeAction,
+  CommandNumber,
 } from './../actions/commands/actions';
 import { CommandInsertInInsertMode, CommandInsertPreviousText } from './../actions/commands/insert';
 import { BaseMovement, isIMovement } from './../actions/motion';
@@ -366,6 +367,10 @@ export class ModeHandler implements vscode.Disposable {
         return vimState;
       case KeypressState.WaitingOnKeys:
         return vimState;
+    }
+
+    if (this._remappers.isPotentialRemap && !(result instanceof CommandNumber)) {
+      return vimState;
     }
 
     let action = result as BaseAction;
