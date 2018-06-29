@@ -39,6 +39,15 @@ suite('Remapper', () => {
         },
       ],
     },
+    {
+      before: [';', 'w'],
+      commands: [
+        {
+          command: 'workbench.action.closeActiveEditor',
+          args: [],
+        },
+      ],
+    },
   ];
   const visualModeKeyBindings: IKeyRemapping[] = [
     {
@@ -248,6 +257,17 @@ suite('Remapper', () => {
 
     // assert
     assert.equal(actual, true);
+    assert.equal(vscode.window.visibleTextEditors.length, 0);
+  });
+
+  test(';, w -> closeActiveEditor in normal mode with remapped default bound key (;)', async () => {
+    // setup
+    assertEqual(modeHandler.currentMode.name, ModeName.Normal);
+
+    // act
+    await modeHandler.handleMultipleKeyEvents([';', 'w']);
+
+    // assert
     assert.equal(vscode.window.visibleTextEditors.length, 0);
   });
 
