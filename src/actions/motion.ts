@@ -303,9 +303,14 @@ class MoveDown extends BaseMovement {
     return position.getDown(vimState.desiredColumn);
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getDown(position.getLineEnd().character);
+    let nextLine = position.getDown(0).getLineEnd();
+    if (nextLine.line === position.line) {
+      return { start: position, stop: position, failed: true };
+    } else {
+      return { start: position.getLineBegin(), stop: nextLine };
+    }
   }
 }
 
@@ -332,9 +337,14 @@ class MoveUp extends BaseMovement {
     return position.getUp(vimState.desiredColumn);
   }
 
-  public async execActionForOperator(position: Position, vimState: VimState): Promise<Position> {
+  public async execActionForOperator(position: Position, vimState: VimState): Promise<IMovement> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
-    return position.getUp(position.getLineEnd().character);
+    let prevLine = position.getUp(0).getLineBegin();
+    if (prevLine.line === position.line) {
+      return { start: position, stop: position, failed: true };
+    } else {
+      return { start: prevLine, stop: position.getLineEnd() };
+    }
   }
 }
 
