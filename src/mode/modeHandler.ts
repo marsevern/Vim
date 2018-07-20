@@ -528,7 +528,9 @@ export class ModeHandler implements vscode.Disposable {
       vimState = await this.executeOperator(vimState);
 
       vimState.recordedState.hasRunOperator = true;
-      ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
+      if (vimState.recordedState.operator) {
+        ranRepeatableAction = vimState.recordedState.operator.canBeRepeatedWithDot;
+      }
       ranAction = true;
     }
 
@@ -760,8 +762,9 @@ export class ModeHandler implements vscode.Disposable {
   private async executeOperator(vimState: VimState): Promise<VimState> {
     let recordedState = vimState.recordedState;
 
+    // Occurs when execActionForOperator returns an IMovement that failed
     if (!recordedState.operator) {
-      throw new Error("what in god's name");
+      return vimState;
     }
 
     let resultVimState = vimState;
