@@ -79,6 +79,15 @@ suite('register', () => {
     assertEqualLines([testString + testString]);
   });
 
+  test("Change stores text in Register '\"'", async () => {
+    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
+
+    await modeHandler.handleMultipleKeyEvents('itest1\ntest2\ntest3'.split(''));
+
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', '2', 'G', 'l', 'l', 'c', 'j', '<Esc>', 'V', 'p']);
+
+    assertEqualLines(['test1', 'test2', 'test3']);
+  });
   test("Yank stores text in Register '0'", async () => {
     modeHandler.vimState.editor = vscode.window.activeTextEditor!;
 

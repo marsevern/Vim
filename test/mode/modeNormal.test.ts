@@ -213,6 +213,22 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'cj'",
+    start: ['te|xt', 'second line', 'line three text'],
+    keysPressed: 'cj',
+    end: ['|', 'line three text'],
+    endMode: ModeName.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'ck' on first line",
+    start: ['te|xt', 'second line', 'line three text'],
+    keysPressed: 'ckj',
+    end: ['text', 'se|cond line', 'line three text'],
+    endMode: ModeName.Normal,
+  });
+
+  newTest({
     title: "Can handle 'cw'",
     start: ['text text tex|t'],
     keysPressed: '^lllllllcw',
