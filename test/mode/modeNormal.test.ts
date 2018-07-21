@@ -1972,6 +1972,55 @@ suite('Mode Normal', () => {
     endMode: ModeName.Normal,
   });
 
+  suite('indent and paragraph text objects handled line-wise', () => {
+    test(`vii selects text correctly`, async () => {
+      await modeHandler.handleMultipleKeyEvents(
+        'iif foo > 3\nlog("foo is big")\nfoo = 3\ndo_something_else()'.split('')
+      );
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', '2', 'G']);
+      await modeHandler.handleMultipleKeyEvents(['v', 'j', '>', '<Esc>', 'v', 'i', 'i']);
+      assertEqual(
+        modeHandler.currentMode.name,
+        ModeName.VisualLine,
+        'vii did not enter visual mode'
+      );
+      const selection = TextEditor.getSelection();
+      assertEqual(selection.start.line, 1, 'incorrect selection start line');
+      assertEqual(selection.end.line, 2, 'incorrect selection end line');
+    });
+    test(`vaI selects text correctly`, async () => {
+      await modeHandler.handleMultipleKeyEvents(
+        'iif foo > 3\nlog("foo is big")\nfoo = 3\ndo_something_else()'.split('')
+      );
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', '2', 'G']);
+      await modeHandler.handleMultipleKeyEvents(['v', 'j', '>', '<Esc>', 'v', 'a', 'I']);
+      assertEqual(
+        modeHandler.currentMode.name,
+        ModeName.VisualLine,
+        'vaI did not enter visual mode'
+      );
+      const selection = TextEditor.getSelection();
+      assertEqual(selection.start.line, 0, 'incorrect selection start line');
+      assertEqual(selection.end.line, 3, 'incorrect selection end line');
+    });
+
+    test(`vip selects text correctly`, async () => {
+      await modeHandler.handleMultipleKeyEvents(
+        'iif foo > 3\nlog("foo is big")\nfoo = 3\ndo_something_else()\n\nnext'.split('')
+      );
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', '2', 'G']);
+      await modeHandler.handleMultipleKeyEvents(['v', 'j', '>', '<Esc>', 'v', 'i', 'p']);
+      assertEqual(
+        modeHandler.currentMode.name,
+        ModeName.VisualLine,
+        'vip did not enter visual mode'
+      );
+      const selection = TextEditor.getSelection();
+      assertEqual(selection.start.line, 0, 'incorrect selection start line');
+      assertEqual(selection.end.line, 3, 'incorrect selection end line');
+    });
+  });
+
   suite('can handle gn', () => {
     test(`gn selects the next match text`, async () => {
       await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
