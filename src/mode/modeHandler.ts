@@ -1007,6 +1007,24 @@ export class ModeHandler implements vscode.Disposable {
             accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
           }
           break;
+        case 'indent':
+          this.vimState.editor.selection = new vscode.Selection(
+            command.range.start,
+            command.range.stop.getLineEnd()
+          );
+          await vscode.commands.executeCommand('editor.action.indentLines');
+          if (command.diff) {
+            if (command.cursorIndex === undefined) {
+              throw new Error('No cursor index - this should never ever happen!');
+            }
+
+            if (!accumulatedPositionDifferences[command.cursorIndex]) {
+              accumulatedPositionDifferences[command.cursorIndex] = [];
+            }
+
+            accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+          }
+          break;
         case 'reindent':
           await vscode.commands.executeCommand('editor.action.reindentselectedlines');
           if (command.diff) {

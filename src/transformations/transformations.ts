@@ -209,6 +209,21 @@ export interface Tab {
 }
 
 /**
+ * Represents indenting lines in the given range
+ */
+export interface Indent {
+  type: 'indent';
+  range: Range;
+
+  cursorIndex?: number;
+
+  /**
+   * Move the cursor this much.
+   */
+  diff?: PositionDiff;
+}
+
+/**
  * Represents reindenting the selected line
  */
 export interface Reindent {
@@ -252,6 +267,7 @@ export type Transformation =
   | ContentChangeTransformation
   | DeleteTextTransformation
   | Tab
+  | Indent
   | Reindent;
 
 /**
