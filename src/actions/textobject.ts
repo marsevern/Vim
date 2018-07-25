@@ -423,6 +423,11 @@ export class SelectParagraph extends TextObjectMovement {
       stop = stop.getDown(0);
     }
 
+    // Mimic Vim by switching to visual line mode from visual
+    if (vimState.currentMode === ModeName.Visual) {
+      vimState.currentMode = ModeName.VisualLine;
+    }
+
     return {
       start: start,
       stop: stop,
@@ -465,6 +470,11 @@ export class SelectInnerParagraph extends TextObjectMovement {
       }
     }
 
+    // Mimic Vim by switching to visual line mode from visual
+    if (vimState.currentMode === ModeName.Visual) {
+      vimState.currentMode = ModeName.VisualLine;
+    }
+
     return {
       start: start,
       stop: stop,
@@ -474,11 +484,13 @@ export class SelectInnerParagraph extends TextObjectMovement {
 
 abstract class IndentObjectMatch extends TextObjectMovement {
   setsDesiredColumnToEOL = true;
+  modes = [ModeName.Normal, ModeName.Visual, ModeName.VisualBlock, ModeName.VisualLine];
 
   protected includeLineAbove = false;
   protected includeLineBelow = false;
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
     const isChangeOperator = vimState.recordedState.operator instanceof ChangeOperator;
     const firstValidLineNumber = IndentObjectMatch.findFirstValidLine(position);
     const firstValidLine = TextEditor.getLineAt(new Position(firstValidLineNumber, 0));
@@ -524,16 +536,13 @@ abstract class IndentObjectMatch extends TextObjectMovement {
     // TextEditor.getLineMaxColumn throws when given line 0, which we don't
     // care about here since it just means this text object wouldn't work on a
     // single-line document.
-    let endCharacter;
-    if (
-      endLineNumber === TextEditor.getLineCount() - 1 ||
-      vimState.currentMode === ModeName.Visual
-    ) {
-      endCharacter = TextEditor.getLineMaxColumn(endLineNumber);
-    } else {
-      endCharacter = 0;
-      endLineNumber++;
+    let endCharacter = TextEditor.getLineMaxColumn(endLineNumber);
+
+    // Mimic original plugin by switching to visual line mode from visual
+    if (vimState.currentMode === ModeName.Visual) {
+      vimState.currentMode = ModeName.VisualLine;
     }
+
     return {
       start: new Position(startLineNumber, startCharacter),
       stop: new Position(endLineNumber, endCharacter),
