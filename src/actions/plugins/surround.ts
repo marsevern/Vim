@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { PairMatcher } from './../../common/matching/matcher';
 import { Position } from './../../common/motion/position';
@@ -399,7 +400,8 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
   }
 
   public static GetStartAndEndReplacements(
-    replacement: string | undefined
+    replacement: string | undefined,
+    isVisualLine: boolean = false
   ): { startReplace: string; endReplace: string } {
     if (!replacement) {
       return { startReplace: '', endReplace: '' };
@@ -422,7 +424,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
 
       if (!PairMatcher.pairings[startReplace].nextMatchIsForward) {
         [startReplace, endReplace] = [endReplace, startReplace];
-      } else {
+      } else if (!isVisualLine) {
         startReplace = startReplace + ' ';
         endReplace = ' ' + endReplace;
       }
@@ -436,7 +438,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
     vimState: VimState,
     position: Position
   ): Promise<boolean> {
-    const { target, replacement, operator } = vimState.surround!;
+    const { target, replacement, operator, isVisualLine } = vimState.surround!;
 
     if (operator === 'change' || operator === 'yank') {
       if (!replacement) {
@@ -449,7 +451,7 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       }
     }
 
-    let { startReplace, endReplace } = this.GetStartAndEndReplacements(replacement);
+    let { startReplace, endReplace } = this.GetStartAndEndReplacements(replacement, isVisualLine);
 
     if (operator === 'yank') {
       if (!vimState.surround) {
@@ -467,8 +469,15 @@ export class CommandSurroundAddToReplacement extends BaseCommand {
       }
 
       if (vimState.surround.isVisualLine) {
-        startReplace = startReplace + '\n';
-        endReplace = '\n' + endReplace;
+        let leadingSpaceRange = new vscode.Range(start, start.getFirstLineNonBlankChar());
+        let leadingSpace = vimState.editor.document.getText(leadingSpaceRange);
+        startReplace = startReplace + '\n' + leadingSpace;
+        endReplace = '\n' + leadingSpace + endReplace;
+        start = start.getFirstLineNonBlankChar();
+        vimState.recordedState.transformations.push({
+          type: 'indent',
+          range: new Range(start.getDown(0), new Position(stop.line + 1, 0)),
+        });
       }
 
       vimState.recordedState.transformations.push({
